@@ -1,0 +1,74 @@
+//SIT315 Programming Paradigms
+//Module1 :Real-time and Embedded Systems
+// TaskM1.T3C: Multiple-Inputs Board
+const int PirSensor1 = 2;     //connected PIR first sensor signal pin to digital pin 2
+const int PirSensor2 = 4;     //connected PIR Second sensor signal pin to digital pin 4
+const int LedPin1 = 12;       // connect LED1 anode to digital pin 12
+const int LedPin2 = 13;      // connect LED2 anode to digital pin 13 
+
+volatile int motionDetected1 = 0;
+volatile int motionDetected2 = 0;
+
+void setup() {
+  pinMode(PirSensor1, INPUT); // Motion1 sensor: input
+  pinMode(PirSensor2, INPUT);  // Motion2 sensor: input
+  pinMode(LedPin1, OUTPUT);     // LED: output
+  pinMode(LedPin2, OUTPUT);
+  // LED: output
+
+  // Initializing the serial communication
+  Serial.begin(9600);
+
+  attachInterrupt(digitalPinToInterrupt(PirSensor1), motionInterruptHandler1, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PirSensor2), motionInterruptHandler2, CHANGE);
+}
+
+void loop() {
+  // The main loop can be used for other purposes or left empty
+  handleMotionDetection(motionDetected1, LedPin1);    // Sensor 1st  handle motion detection
+  handleMotionDetection(motionDetected2, LedPin2);  // Sensor 2nd  handle motion detection
+}
+
+void motionInterruptHandler1() {
+  // Debounce delay is not necessary as it is handled in software
+  int pirSensorValue = digitalRead(PirSensor1);
+
+  Serial.print("Motion Sensor 1 Value is: ");
+  Serial.println(pirSensorValue);
+
+  if (pirSensorValue == HIGH) {
+    //Sensor 1 motion detected
+    motionDetected1 = 1;
+  } else {
+    motionDetected1 = 0;
+     // When there is no motion, no particular action is taken.
+  }
+}
+
+void motionInterruptHandler2() {
+  // Since software handles debouncing, there is no need for a delay.
+  int pirSensorValue = digitalRead(PirSensor2);
+
+  Serial.print("Motion Sensor 2 Value is: ");
+  Serial.println(pirSensorValue);
+
+  if (pirSensorValue == HIGH) {
+    // Sensor 2 Motion detected
+    motionDetected2 = 1;
+  } else {
+    motionDetected2 = 0;
+     // When there is no motion, no particular action is taken.
+  }
+}
+
+void handleMotionDetection(int motionDetected, int ledPin) 
+// Control how the LEDs behave when they sense motion
+{
+  if (motionDetected) {
+    digitalWrite(ledPin, HIGH);   //Turn LED ON
+    Serial.println("Motion is Detected!!!");
+    delay(1000);    //delay                 
+    digitalWrite(ledPin, LOW);    // Turn LED OFF
+  }
+}
+
